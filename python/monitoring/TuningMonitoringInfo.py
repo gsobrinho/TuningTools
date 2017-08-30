@@ -127,10 +127,12 @@ class MonitoringPerfInfo( MonitoringOperationInfo ):
   #tobj: tuning object
   #bobj: benchmark object
   #infoOp: infoOpBest or infoOpWorst
-  def __init__(self, name, ref, tobj, opObj, bobj):
+  def __init__(self, name, ref, tobj, opObj, bobj,sortDets,sortPfs):
     
     MonitoringOperationInfo.__init__(self, opObj)
     #name
+    self._sortDets = sortDets
+    self._sortPfs = sortPfs
     self._name   = name
     self._perf = dict()
     self._ref = dict()
@@ -146,7 +148,8 @@ class MonitoringPerfInfo( MonitoringOperationInfo ):
     self._ref['sp'] = calcSP(self._ref['det'], 100-self._ref['fa'])
     #Hold values
     for key in self._keys:  self._perf[key] = tobj[key]*100
-
+  def getSortPerfs(self):
+    return [self._sortDets,self._sortPfs]
   def name(self):
     return self._name
 

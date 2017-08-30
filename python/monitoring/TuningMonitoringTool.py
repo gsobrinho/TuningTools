@@ -9,7 +9,6 @@ from TuningStyle          import SetTuningStyle
 from RingerCore           import calcSP, save, load, Logger, mkdir_p, progressbar
 from pprint               import pprint
 import os
-from RingerCore import keyboard
 #Main class to plot and analyser the crossvalidStat object
 #created by CrossValidStat class from tuningTool package
 class TuningMonitoringTool( Logger ):
@@ -133,13 +132,14 @@ class TuningMonitoringTool( Logger ):
       perfObjects = dict()
       infoObjects = dict()
       pathObjects = dict()
+      signal_paterns = dict()
+      background_paterns = dict()
       #Init PlotsHolder 
       for plotname in wantedPlotNames:  
         if 'Sorts' in plotname:
           plotObjects[plotname] = PlotHolder(label = 'Sort')
         else:
           plotObjects[plotname] = PlotHolder(label = 'Neuron')
-     # keyboard()
       #Retrieve benchmark name
       benchmarkName = infoObj.name()
       #Retrieve reference name
@@ -172,7 +172,6 @@ class TuningMonitoringTool( Logger ):
  
       self._logger.info('Creating plots...')
       # Creating plots
-     # keyboard()
       neuron = choices ['choices'][infoObj.name().split('_')[-1]][0][0][etbinidx][etabinidx]
       
       # Figure path location
@@ -240,10 +239,12 @@ class TuningMonitoringTool( Logger ):
       plotObjects['allWorstOpNeurons'].append( copy.deepcopy(plotObjects['allBestOpSorts'].get_worst()  ))
       
       # Create perf (tables) Objects for test and operation (Table)
+      maxSortdets = {k:max(csummary[neuronName][k]['summaryInfoTst']['det']) for k in csummary[neuronName].keys() if 'sort' in k}
+      maxSortfas = {k:max(csummary[neuronName][k]['summaryInfoTst']['fa']) for k in csummary[neuronName].keys() if 'sort' in k}
       perfObjects[neuronName] =  MonitoringPerfInfo(benchmarkName, reference, 
                                                                csummary[neuronName]['summaryInfoTst'], 
                                                                csummary[neuronName]['infoOpBest'], 
-                                                               cbenchmark) 
+                                                               cbenchmark,maxSortdets,maxSortfas)
       # Debug information
       self._logger.debug(('Crossval indexs: (bestSort = %d, bestInit = %d) (worstSort = %d, bestInit = %d)')%\
             (plotObjects['allBestTstSorts'].best, plotObjects['allBestTstSorts'].get_best()['bestInit'],
@@ -361,19 +362,21 @@ class TuningMonitoringTool( Logger ):
     #Et bin
     binBounds = dict()
     if len(etbin) > 0 :
-      binBounds['etbinstr'] = r'$%d < E_{T} \text{[Gev]}<%d$'%etbin
+      binBounds['etbinstr'] = r'$%d < E_{T} \text{[Gev]}<%d$'%tuple(etbin)
     else:
       binBounds['etbinstr'] = r'\text{etBin[%d]}' % etbinidx
 
     if len(etabin) > 0 :
-      binBounds['etabinstr'] = r'$%.2f<\eta<%.2f$'%etabin
+      binBounds['etabinstr'] = r'$%.2f<\eta<%.2f$'%tuple(etabin)
     else:
       binBounds['etabinstr'] = r'\text{etaBin[%d]}' % etabinidx
-    perfBounds=dict()
-    perfBounds['bounds'] = binBounds
-    perfBounds['perf'] = perfBenchmarks
-    fname = basepath +'/'+ 'perfBounds'
-    save(perfBounds,fname)
+    anex=dict()
+    anex[ 'nsignal'] = args['nsignal']
+    anex[ 'nbackground'] = args['nbackground']
+    anex['bounds'] = binBounds
+    anex['perf'] = perfBenchmarks
+    fname = basepath +'/'+ 'anex'
+    save(anex,fname)
   #End of loop()
 
 

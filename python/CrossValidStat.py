@@ -296,6 +296,8 @@ class CrossValidStatAnalysis( Logger ):
 
     pbinIdxList=[]
     isMergedList=[]
+    etBinDict=dict()
+    etaBinDict=dict()
     for binIdx, binPath in enumerate(progressbar(self._paths, 
                                                  len(self._paths), 'Retrieving tuned operation points: ', 30, True,
                                                  logger = self._logger)):
@@ -354,8 +356,8 @@ class CrossValidStatAnalysis( Logger ):
       tuningBenchmarks.append( binTuningBench )
       etBinIdx          = tdArchieve.etBinIdx
       etaBinIdx         = tdArchieve.etaBinIdx
-      etBin          = tdArchieve.etBin
-      etaBin         = tdArchieve.etaBin
+      etBinDict['%d'%etBinIdx] =  tdArchieve.etBin
+      etaBinDict['%d'%etaBinIdx] = tdArchieve.etaBin
       # pegar o etBin / etaBin
 
       self._debug("Found a total of %d tuned operation points on bin (et:%d,eta:%d). They are: ", 
@@ -364,8 +366,7 @@ class CrossValidStatAnalysis( Logger ):
       for bench in binTuningBench:
         self._debug("%s", bench)
         # end of (tuning benchmarks retrieval)
-
-    # Make sure everything is ok with the reference benchmark collection (do not check for nBins):
+    #Make sure everything is ok with the reference benchmark collection (do not check for nBins):
     if refBenchmarkCol is not None:
       refBenchmarkCol = fixReferenceBenchmarkCollection(refBenchmarkCol, nBins = None,
                                                         nTuned = nTuned, level = self.level )
@@ -625,10 +626,10 @@ class CrossValidStatAnalysis( Logger ):
       for refKey, refValue in tunedDiscrInfo.iteritems(): # Loop over operations
         refBenchmark = refValue['benchmark']
         # Create a new dictionary and append bind it to summary info
-        refDict = { 'rawBenchmark' : refBenchmark.toRawObj(),
+        rawBenchmark = refBenchmark.toRawObj()
+        refDict = { 'rawBenchmark' : rawBenchmark,
                     'rawTuningBenchmark' : refValue['tuningBenchmark'].toRawObj(),
-                    'etBinIdx' : etBinIdx, 'etaBinIdx' : etaBinIdx,
-                    'etBin' : etBin, 'etaBin' : etaBin,
+                    'etBin' : etBinDict['%d'%rawBenchmark['signalEfficiency']['etBin']], 'etaBin' : etaBinDict['%d'%rawBenchmark['signalEfficiency']['etaBin']],
                   }
         headerKeys = refDict.keys()
         eps, modelChooseMethod = refValue['eps'], refValue['modelChooseMethod']
