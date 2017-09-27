@@ -15,11 +15,11 @@ PACKAGE_DEP          = RingerCore
 # Extra package cleanup:
 PACKAGE_CLEAN				 =
 # additional compilation flags to pass (not propagated to dependent packages):
-PACKAGE_CXXFLAGS = 
+PACKAGE_CXXFLAGS =  -I.
 # additional compilation flags to pass (propagated to dependent packages):
-PACKAGE_OBJFLAGS = -std=c++11 -fPIC -lboost_python -lpython2.7 -isystem/usr/include/python2.7 -isystem/usr/lib64/python2.7/site-packages//numpy/core/include -fopenmp -lgomp -DUSING_MULTI_THREAD
+PACKAGE_OBJFLAGS = -std=c++11 -fPIC -lboost_python -I. -lpython2.7 -isystem/usr/include/python2.7 -isystem/usr/lib64/python2.7/site-packages//numpy/core/include -fopenmp -lgomp -DUSING_MULTI_THREAD
 # additional linker flags to pass (for compiling the library):
-PACKAGE_LDFLAGS = -lRingerCore -fPIC -lboost_python -lpython2.7 -L/usr//lib -lgomp -DUSING_MULTI_THREAD
+PACKAGE_LDFLAGS = -lRingerCore -fPIC -lboost_python -L/home/gsobrinho/RingerProject/root/RootCoreBin/lib/x86_64-slc6-gcc49-opt -lpython2.7 -L/usr//lib -lgomp -DUSING_MULTI_THREAD
 # additional linker flags to pass (for compiling binaries):
 PACKAGE_BINFLAGS     =
 # additional linker flags to pass (propagated to client libraries):

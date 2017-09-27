@@ -6,7 +6,7 @@ __all__ = ['TuningMonitoringTool']
 #Import necessary classes
 from TuningMonitoringInfo import TuningMonitoringInfo
 from TuningStyle          import SetTuningStyle
-from RingerCore           import calcSP, save, load, Logger, mkdir_p, progressbar
+from RingerCore           import calcSP, save, load, Logger, mkdir_p, progressbar,keyboard
 from pprint               import pprint
 import os
 #Main class to plot and analyser the crossvalidStat object
@@ -63,10 +63,24 @@ class TuningMonitoringTool( Logger ):
     else:
       self._logger.fatal('You must pass the ref file as parameter. abort!')
 
-
+  
   def etbinidx(self):
     return self._infoObjs[0].etbinidx()
 
+  def _ChoosePdPf(self,faList,pdList,name):
+    if name == "Pd":
+      fa = min(faList)
+      pd = pdList[faList.index(fa)]
+
+    if name == "Pf":
+      pd = max(pdList)
+      fa = faList[pdList.index(pd)]
+    if name == "SP":
+      spList =  [calcSP(pdList[idx]*100, 100-faList[idx]*100) for idx in xrange(len(pdList))]
+      sp = max(spList)
+      pd = pdList[spList.index(sp)]
+      fa = faList[spList.index(sp)]
+    return pd,fa
 
   def etabinidx(self):
     return self._infoObjs[0].etabinidx()
@@ -239,12 +253,24 @@ class TuningMonitoringTool( Logger ):
       plotObjects['allWorstOpNeurons'].append( copy.deepcopy(plotObjects['allBestOpSorts'].get_worst()  ))
       
       # Create perf (tables) Objects for test and operation (Table)
-      maxSortdets = {k:max(csummary[neuronName][k]['summaryInfoTst']['det']) for k in csummary[neuronName].keys() if 'sort' in k}
-      maxSortfas = {k:max(csummary[neuronName][k]['summaryInfoTst']['fa']) for k in csummary[neuronName].keys() if 'sort' in k}
+      rname = benchmarkName.split("_")[-1]
+      sortdets = dict()
+      sortfas = dict()
+      for k in csummary[neuronName].keys():
+        if "sort" in k: 
+          faList = csummary[neuronName][k]['summaryInfoTst']['fa'] 
+          pdList = csummary[neuronName][k]['summaryInfoTst']['det']
+          sortdets[k],sortfas[k] = self._ChoosePdPf(faList,pdList,rname)
+
+
+        
+          
+
+
       perfObjects[neuronName] =  MonitoringPerfInfo(benchmarkName, reference, 
                                                                csummary[neuronName]['summaryInfoTst'], 
                                                                csummary[neuronName]['infoOpBest'], 
-                                                               cbenchmark,maxSortdets,maxSortfas)
+                                                               cbenchmark,sortdets,sortfas)
       # Debug information
       self._logger.debug(('Crossval indexs: (bestSort = %d, bestInit = %d) (worstSort = %d, bestInit = %d)')%\
             (plotObjects['allBestTstSorts'].best, plotObjects['allBestTstSorts'].get_best()['bestInit'],
