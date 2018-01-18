@@ -401,6 +401,14 @@ public :
    Int_t           elCand2_isMediumLLHCalo_Smooth_v11;
    Int_t           elCand2_isLooseLLHCalo_Smooth_v11;
    Int_t           elCand2_isVeryLooseLLHCalo_Smooth_v11;
+   Int_t           elCand2_VeryLooseLLH_DataDriven_Rel20pt7_Smooth_vTest;
+   Int_t           elCand2_LooseLLH_DataDriven_Rel20pt7_Smooth_vTest;
+   Int_t           elCand2_MediumLLH_DataDriven_Rel20pt7_Smooth_vTest;
+   Int_t           elCand2_TightLLH_DataDriven_Rel20pt7_Smooth_vTest;
+   Int_t           elCand2_VeryLooseLLH_DataDriven_Rel21_Smooth_vTest;
+   Int_t           elCand2_LooseLLH_DataDriven_Rel21_Smooth_vTest;
+   Int_t           elCand2_MediumLLH_DataDriven_Rel21_Smooth_vTest;
+   Int_t           elCand2_TightLLH_DataDriven_Rel21_Smooth_vTest;
 
    Int_t           fcCand1_match;
    Float_t         fcCand1_cl_E;

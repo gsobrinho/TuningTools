@@ -82,7 +82,14 @@ class RingerOperation(EnumStringification):
   HLT_LH_Loose = 12
   HLT_LH_VLoose = 13
   Trigger = 14
-
+  Offline_LH_DataDriven2016_Rel20pt7_VeryLoose  = 15
+  Offline_LH_DataDriven2016_Rel20pt7_Loose  = 16
+  Offline_LH_DataDriven2016_Rel20pt7_Medium = 17
+  Offline_LH_DataDriven2016_Rel20pt7_Tight = 18
+  Offline_LH_DataDriven2016_Rel21_VeryLoose  = 19
+  Offline_LH_DataDriven2016_Rel21_Loose  = 20
+  Offline_LH_DataDriven2016_Rel21_Medium = 21
+  Offline_LH_DataDriven2016_Rel21_Tight = 22
   @classmethod
   def branchName(cls, val):
     val = cls.retrieve( val )
