@@ -338,7 +338,12 @@ class RemoveMean( PrepObj ):
     PrepObj.__init__( self, d )
     checkForUnusedVars(d, self._warning )
     del d
+<<<<<<< HEAD
     self._mean = np.fp_array( means ) if means else np.array( [], dtype=npCurrent.dtype )
+=======
+    self._mean = np.fp_array( means ) if means is not None else np.array( [], dtype=npCurrent.dtype )
+
+>>>>>>> 885ab8f4ca908a8cbd3e0774420f7758b1ce17f1
   @property
   def mean(self):
     return self._mean
