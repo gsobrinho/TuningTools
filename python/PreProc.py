@@ -11,7 +11,7 @@ __all__ = ['PreProcStrategy', 'PreProcArchieve', 'PrepObj', 'Projection',  'Remo
            'checkRingerSpiralShape',
            ]
 
-from RingerCore import ( Logger, LoggerStreamable, checkForUnusedVars, EnumStringification,
+from RingerCore import ( Logger, LoggerStreamable, checkForUnusedVars, EnumStringification
                        , save, load, LimitedTypeList, LoggingLevel, LoggerRawDictStreamer
                        , LimitedTypeStreamableList, RawDictStreamer, RawDictCnv )
 from TuningTools.coreDef import npCurrent
@@ -338,8 +338,7 @@ class RemoveMean( PrepObj ):
     PrepObj.__init__( self, d )
     checkForUnusedVars(d, self._warning )
     del d
-    self._mean = npCurrent.fp_array(means) if means is not None else np.array( [], dtype=npCurrent.dtype )
-
+    self._mean = np.fp_array( means ) if means else np.array( [], dtype=npCurrent.dtype )
   @property
   def mean(self):
     return self._mean
