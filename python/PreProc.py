@@ -4,14 +4,14 @@ __all__ = ['PreProcStrategy', 'PreProcArchieve', 'PrepObj', 'Projection',  'Remo
            'PreProcChain', 'PreProcCollection', 'RingerEtaMu', 'RingerFilterMu',
            'StatReductionFactor', 'StatUpperLimit', 'fixPPCol', 'RingerPU',
            'RingerEtEtaMu', 'ShowerShapesSimpleNorm', 'ExpertNetworksShowerShapeSimpleNorm',
-           'ExpertNetworksShowerShapeAndTrackSimpleNorm', 'TrackSimpleNorm', 
+           'ExpertNetworksShowerShapeAndTrackSimpleNorm', 'TrackSimpleNorm',
            'ExpertNetworksSimpleNorm',
            'RingerLayerSegmentation','RingerLayer',
            'PreProcMerge',
            'checkRingerSpiralShape',
            ]
 
-from RingerCore import ( Logger, LoggerStreamable, checkForUnusedVars, EnumStringification
+from RingerCore import ( Logger, LoggerStreamable, checkForUnusedVars, EnumStringification,
                        , save, load, LimitedTypeList, LoggingLevel, LoggerRawDictStreamer
                        , LimitedTypeStreamableList, RawDictStreamer, RawDictCnv )
 from TuningTools.coreDef import npCurrent
@@ -94,9 +94,9 @@ class PreProcArchieve( Logger ):
       import sys
       sys.modules['FastNetTool.PreProc'] = sys.modules[__name__]
       ppColInfo = load( self._filePath )
-    try: 
+    try:
       if ppColInfo['type'] != self._type:
-        self._fatal(("Input crossValid file is not from PreProcFile " 
+        self._fatal(("Input crossValid file is not from PreProcFile "
             "type."))
       if ppColInfo['version'] == 3:
         ppCol = PreProcCollection.fromRawObj( ppColInfo['ppCol'] )
@@ -110,10 +110,10 @@ class PreProcArchieve( Logger ):
       self._fatal(("Couldn't read PreProcArchieve('%s'): Reason:"
           "\n\t %s" % (self._filePath,e,)))
     return ppCol
-    
+
   def __exit__(self, exc_type, exc_value, traceback):
     # Remove bound
-    self.ppChain = None 
+    self.ppChain = None
 
 class UndoPreProcError(RuntimeError):
   """
@@ -244,13 +244,13 @@ class Norm1(PrepObj):
     if isinstance(data, (tuple, list,)):
       norms = []
       for cdata in data:
-        cnorm = np.abs( cdata.sum(axis=npCurrent.pdim).reshape( 
+        cnorm = np.abs( cdata.sum(axis=npCurrent.pdim).reshape(
             npCurrent.access( pidx=1,
                               oidx=cdata.shape[npCurrent.odim] ) ) )
         cnorm[cnorm==0] = 1
         norms.append( cnorm )
     else:
-      norms = np.abs( data.sum(axis=npCurrent.pdim).reshape( 
+      norms = np.abs( data.sum(axis=npCurrent.pdim).reshape(
             npCurrent.access( pidx=1,
                               oidx=data.shape[npCurrent.odim] ) ) )
       norms[norms==0] = 1
@@ -284,7 +284,7 @@ class Projection(PrepObj):
     Project data into new base
   """
 
-  # FIXME: This will probably give problematic results if data is saved 
+  # FIXME: This will probably give problematic results if data is saved
   # with one numpy type and executed with other type
 
   _streamerObj = LoggerRawDictStreamer(toPublicAttrs = {'_mat'})
@@ -338,12 +338,12 @@ class RemoveMean( PrepObj ):
     PrepObj.__init__( self, d )
     checkForUnusedVars(d, self._warning )
     del d
-    self._mean = np.fp_array( means ) if means else np.array( [], dtype=npCurrent.dtype )
+    self._mean = npCurrent.fp_array(means) if means is not None else np.array( [], dtype=npCurrent.dtype )
 
   @property
   def mean(self):
     return self._mean
-  
+
   @property
   def params(self):
     return self.mean()
@@ -352,12 +352,12 @@ class RemoveMean( PrepObj ):
     """
       Calculate mean for transformation.
     """
-    if not self._mean:
+    if not self._mean.size:
       import copy
       data = copy.deepcopy(trnData)
       if isinstance(trnData, (tuple, list,)):
         data = np.concatenate( trnData, axis=npCurrent.odim )
-      self._mean = np.mean( data, axis=npCurrent.odim, dtype=data.dtype ).reshape( 
+      self._mean = np.mean( data, axis=npCurrent.odim, dtype=data.dtype ).reshape(
               npCurrent.access( pidx=data.shape[npCurrent.pdim],
                                 oidx=1 ) )
     return self._apply(trnData)
@@ -429,7 +429,7 @@ class UnitaryRMS( PrepObj ):
     data = copy.deepcopy(trnData)
     if isinstance(data, (tuple, list,)):
       data = np.concatenate( data, axis=npCurrent.odim )
-    tmpArray = np.sqrt( np.mean( np.square( data ), axis=npCurrent.odim ) ).reshape( 
+    tmpArray = np.sqrt( np.mean( np.square( data ), axis=npCurrent.odim ) ).reshape(
                 npCurrent.access( pidx=data.shape[npCurrent.pdim],
                                   oidx=1 ) )
     tmpArray[tmpArray==0] = 1
@@ -531,7 +531,7 @@ class ShowerShapesSimpleNorm( PrepObj ):
     d.update( kw ); del kw
     PrepObj.__init__(self, d)
     checkForUnusedVars(d, self._warning)
-    self._factors = [1.0,    # eratio 
+    self._factors = [1.0,    # eratio
                      1.0,    # reta
                      1.0,    # rphi
                      0.1,    # rhad
@@ -582,7 +582,7 @@ class ExpertNetworksShowerShapeSimpleNorm(Norm1):
     d.update( kw ); del kw
     PrepObj.__init__(self, d)
     checkForUnusedVars(d, self._warning)
-    self._factors = [1.0,    # eratio 
+    self._factors = [1.0,    # eratio
                      1.0,    # reta
                      1.0,    # rphi
                      0.1,    # rhad
@@ -644,7 +644,7 @@ class ExpertNetworksShowerShapeAndTrackSimpleNorm(Norm1):
     d.update( kw ); del kw
     PrepObj.__init__(self, d)
     checkForUnusedVars(d, self._warning)
-    self._factors_std = [1.0,    # eratio 
+    self._factors_std = [1.0,    # eratio
                          1.0,    # reta
                          1.0,    # rphi
                          0.1,    # rhad
@@ -865,13 +865,13 @@ class FirstNthPatterns(PrepObj):
     return "F%dP" % self._n
 
   def _apply(self, data):
-    try: 
+    try:
       if isinstance(data, (tuple, list,)):
         ret = []
         for cdata in data:
           ret.append( cdata[npCurrent.access( pidx=slice(0,self._n), oidx=':'  ) ] )
       else:
-        ret = data[ npCurrent.access( pidx=slice(0,self._n), oidx=':'  ) ]  
+        ret = data[ npCurrent.access( pidx=slice(0,self._n), oidx=':'  ) ]
     except IndexError, e:
       self._fatal("Data has not enought patterns!\n%s", str(e), IndexError)
     return ret
@@ -966,7 +966,7 @@ class MapStd( PrepObj ):
   @property
   def mean(self):
     return self._mean
-  
+
   @property
   def rms(self):
     return 1 / self._invRMS
@@ -988,11 +988,11 @@ class MapStd( PrepObj ):
     data = copy.deepcopy(trnData)
     if isinstance(data, (tuple, list,)):
       data = np.concatenate( data, axis=npCurrent.odim )
-    self._mean = np.mean( data, axis=npCurrent.odim, dtype=data.dtype ).reshape( 
+    self._mean = np.mean( data, axis=npCurrent.odim, dtype=data.dtype ).reshape(
             npCurrent.access( pidx=data.shape[npCurrent.pdim],
                               oidx=1 ) )
     data = data - self._mean
-    tmpArray = np.sqrt( np.mean( np.square( data ), axis=npCurrent.odim ) ).reshape( 
+    tmpArray = np.sqrt( np.mean( np.square( data ), axis=npCurrent.odim ) ).reshape(
                 npCurrent.access( pidx=data.shape[npCurrent.pdim],
                                   oidx=1 ) )
     tmpArray[tmpArray==0] = 1
@@ -1080,7 +1080,7 @@ class MapStd_MassInvariant( MapStd ):
 
 class PCA( PrepObj ):
   """
-    PCA preprocessing 
+    PCA preprocessing
   """
   def __init__(self, d = {}, **kw):
     d.update( kw ); del kw
@@ -1157,7 +1157,7 @@ class PCA( PrepObj ):
 
 class KernelPCA( PrepObj ):
   """
-    Kernel PCA preprocessing 
+    Kernel PCA preprocessing
   """
   _explained_variance_ratio = None
   _cov = None
@@ -1181,11 +1181,11 @@ class KernelPCA( PrepObj ):
       self._fatal('Energy value must be in: [0,1]')
 
     from sklearn import decomposition
-    self._kpca  = decomposition.KernelPCA(kernel = self._kernel, 
+    self._kpca  = decomposition.KernelPCA(kernel = self._kernel,
                                           n_components = self._n_components,
-                                          eigen_solver = 'auto', 
+                                          eigen_solver = 'auto',
                                           gamma=self._gamma,
-                                          fit_inverse_transform= self._fit_inverse_transform, 
+                                          fit_inverse_transform= self._fit_inverse_transform,
                                           remove_zero_eig=self._remove_zero_eig)
     del d
 
@@ -1194,7 +1194,7 @@ class KernelPCA( PrepObj ):
 
   def takeParams(self, trnData):
 
-    #FIXME: try to reduze the number of samples for large 
+    #FIXME: try to reduze the number of samples for large
     #datasets. There is some problem into sklearn related
     #to datasets with more than 20k samples. (lock to 16K samples)
     data = trnData
@@ -1207,7 +1207,7 @@ class KernelPCA( PrepObj ):
           data[pattern] = cdata[
             npCurrent.access( pdim=':',
                               odim=(0,np.random.permutation(cdata.shape[npCurrent.odim])[0:self._max_samples]))
-                               ] 
+                               ]
         pattern+=1
       data = np.concatenate( data, axis=npCurrent.odim )
       trnData = np.concatenate( trnData, axis=npCurrent.odim )
@@ -1235,7 +1235,7 @@ class KernelPCA( PrepObj ):
     self._explained_variance_ratio = explained_variance / np.sum(explained_variance)
     max_components_found = data_transf.shape[0]
     # release space
-    data = [] 
+    data = []
     data_transf = []
 
     #fix n components by load curve
@@ -1270,7 +1270,7 @@ class KernelPCA( PrepObj ):
       return "KernelPCA_energy_"+str(self._energy)
     else:
       return "KernelPCA_ncomp_"+str(self._n_components)
-      
+
 
   def shortName(self):
     """
@@ -1553,7 +1553,7 @@ class RingerLayerSegmentation(PrepObj):
       self._slice = (96,99)
     else:
       self._logger.fatal('Option not supported: %d', self._layer)
-   
+
   def __str__(self):
     """
       String representation of the object.
@@ -1568,14 +1568,14 @@ class RingerLayerSegmentation(PrepObj):
 
   def _apply(self, data):
     self._logger.info('Applying Segmentation between: ring%d->ring%d',self._slice[0],self._slice[1])
-    try: 
+    try:
       if isinstance(data, (tuple, list,)):
         ret = []
         for cdata in data:
           print cdata
           ret.append( cdata[npCurrent.access( pidx=slice(self._slice[0],self._slice[1]+1), oidx=':'  ) ] )
       else:
-        ret = data[ npCurrent.access( pidx=slice(self._slice[0],self._slice[1]+1), oidx=':'  ) ]  
+        ret = data[ npCurrent.access( pidx=slice(self._slice[0],self._slice[1]+1), oidx=':'  ) ]
     except IndexError, e:
       self._fatal("Data has not enought patterns!\n%s", str(e), IndexError)
     return ret
@@ -1650,7 +1650,7 @@ class PreProcMerge(PrepObj):
 
   def takeParams(self, trnData):
     """
-      Take pre-processing parameters for all objects in chain. 
+      Take pre-processing parameters for all objects in chain.
     """
     ret = []
     for i, cdata in enumerate(trnData):
@@ -1720,7 +1720,7 @@ class StatReductionFactor(PrepObj):
 
   def psprocessing(self, data, extra, pCount = 0):
     " Apply stats reduction "
-    # We remove stats at random in the beginning of the process, so all sorts 
+    # We remove stats at random in the beginning of the process, so all sorts
     # have the same statistics available
     from TuningTools import BaseInfo
     # TODO Make sure that all patterns have the same number of observations
@@ -1784,7 +1784,7 @@ class StatUpperLimit(PrepObj):
 
   def concatenate(self, data, _):
     " Apply stats reduction "
-    # We remove stats at random in the beginning of the process, so all sorts 
+    # We remove stats at random in the beginning of the process, so all sorts
     # have the same statistics available
     if isinstance(data, (tuple, list,)):
       ret = []
@@ -1880,7 +1880,7 @@ class PreProcChain ( Logger ):
 
   def takeParams(self, trnData):
     """
-      Take pre-processing parameters for all objects in chain. 
+      Take pre-processing parameters for all objects in chain.
     """
     if not self:
       self._warning("No pre-processing available in this chain.")
@@ -1953,7 +1953,7 @@ def fixPPCol( var, nSorts = 1, nEta = 1, nEt = 1, level = None ):
   """
   tree_types = (PreProcCollection, PreProcChain, list, tuple )
   from RingerCore import firstItemDepth
-  try: 
+  try:
     # Retrieve collection maximum depth
     depth = firstItemDepth(var, tree_types = tree_types)
   except GeneratorExit:
